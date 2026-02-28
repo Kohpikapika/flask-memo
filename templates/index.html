@@ -12,8 +12,17 @@
         <button type="submit">追加</button>
     </form>
 
-    {% if memo %}
-        <p>入力されたメモ：{{ memo }}</p>
-    {% endif %}
+    <ul>
+        {% for data in dataList %}
+            <li>
+              {{ data.content }}
+            
+              <form method="POST" action="/delete" style="display:inline;">
+                  <input type="hidden" name="id" value="{{ data.id }}">
+                  <button type="submit">削除</button>
+              </form>
+            </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
