@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, request, jsonify
 import sqlite3
 
 app = Flask(__name__)
@@ -8,58 +8,67 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        memo = request.form.get("memo")
-
-        if memo:
-            conn = get_db_connection()
-            conn.execute(
-                "INSERT INTO memos (content) VALUES (?)",
-                (memo,)
-            )
-            conn.commit()
-            conn.close()
-
+# GET /api/memos
+@app.route("/api/memos", methods=["GET"])
+def api_get_memos():
     conn = get_db_connection()
     dataList = conn.execute(
         "SELECT * FROM memos ORDER BY id DESC"
     ).fetchall()
     conn.close()
 
-    return render_template("index.html", dataList=dataList)
+    return jsonify([dict(data) for data in dataList])
 
-@app.route("/delete", methods=["POST"])
-def delete():
-    memo_id = request.form.get("id")
+# POST /api/memos
+@app.route("/api/memos", methods=["POST"])
+def api_create_memo():
+    data = request.json
+    content = data.get("content")
 
-    if memo_id:
-        conn = get_db_connection()
-        conn.execute(
-            "DELETE FROM memos WHERE id = ?",
-            (memo_id,)
-        )
-        conn.commit()
-        conn.close()
+    if not content:
+        return jsonify({"error": "content is required"}), 400
 
-    return redirect("/")
+    conn = get_db_connection()
+    conn.execute(
+        "INSERT INTO memos (content) VALUES (?)",
+        (content,)
+    )
+    conn.commit()
+    conn.close()
 
-@app.route("/update", methods=["POST"])
-def update():
-    memo_id = request.form.get("id")
-    content = request.form.get("content")
+    return jsonify({"status": "created"}), 201
 
-    if memo_id and content:
-        conn = get_db_connection()
-        conn.execute(
-            "UPDATE memos SET content = ? WHERE id = ?",
-            (content, memo_id)
-        )
-        conn.commit()
-        conn.close()
+# PUT /api/memos/<int:memo_id>
+@app.route("/api/memos/<int:memo_id>", methods=["PUT"])
+def api_update_memo(memo_id):
+    data = request.json
+    content = data.get("content")
 
-    return redirect("/")
+    if not content:
+        return jsonify({"error": "content is required"}), 400
+
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE memos SET content = ? WHERE id = ?",
+        (content, memo_id)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "updated"})
+
+# DELETE /api/memos/<int:memo_id>
+@app.route("/api/memos/<int:memo_id>", methods=["DELETE"])
+def api_delete_memo(memo_id):
+    conn = get_db_connection()
+    conn.execute(
+        "DELETE FROM memos WHERE id = ?",
+        (memo_id,)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "deleted"})
 
 def init_db():
     conn = sqlite3.connect("memo.db")
@@ -76,5 +85,4 @@ def init_db():
     conn.close()
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
