@@ -6,6 +6,14 @@
 </head>
 <body>
     <h1>Flask Memo</h1>
-    <p>FlaskでHTMLを表示できました。</p>
+
+    <form method="POST">
+        <input type="text" name="memo" placeholder="メモを入力">
+        <button type="submit">追加</button>
+    </form>
+
+    {% if memo %}
+        <p>入力されたメモ：{{ memo }}</p>
+    {% endif %}
 </body>
 </html>
