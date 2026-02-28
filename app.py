@@ -45,6 +45,22 @@ def delete():
 
     return redirect("/")
 
+@app.route("/update", methods=["POST"])
+def update():
+    memo_id = request.form.get("id")
+    content = request.form.get("content")
+
+    if memo_id and content:
+        conn = get_db_connection()
+        conn.execute(
+            "UPDATE memos SET content = ? WHERE id = ?",
+            (content, memo_id)
+        )
+        conn.commit()
+        conn.close()
+
+    return redirect("/")
+
 def init_db():
     conn = sqlite3.connect("memo.db")
     cur = conn.cursor()

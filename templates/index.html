@@ -15,7 +15,11 @@
     <ul>
         {% for data in dataList %}
             <li>
-              {{ data.content }}
+              <form method="POST" action="/update" style="display:inline;">
+                  <input type="hidden" name="id" value="{{ data.id }}">
+                  <input type="text" name="content" value="{{ data.content }}">
+                  <button type="submit">更新</button>
+              </form>
             
               <form method="POST" action="/delete" style="display:inline;">
                   <input type="hidden" name="id" value="{{ data.id }}">
