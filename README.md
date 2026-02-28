@@ -18,9 +18,9 @@ flask-memo/
 │ ├─ memo.db # 自動生成（Git管理外）
 │ └─ venv/ # 仮想環境（Git管理外）
 └─ frontend/ # Vue (Vite)
-├─ package.json
-├─ index.html
-└─ src/
+  ├─ package.json
+  ├─ index.html
+  └─ src/
 ```
 
 
