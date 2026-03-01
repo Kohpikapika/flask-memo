@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AppLayout from '../layout/AppLayout.vue'
+import TopBar from '../layout/TopBar.vue'
 
 const memos = ref([]);
 const content = ref("");
@@ -108,98 +109,104 @@ onMounted(fetchMemos);
     :breadcrumbs="crumbs"
     active-menu="memos"
   >
-    <el-space direction="vertical" size="large" style="width: 100%">
-      <el-breadcrumb
-        separator="/"
-        v-for="item in crumbs"
-        >
-        <el-breadcrumb-item>{{ item.label }}</el-breadcrumb-item>
-      </el-breadcrumb>
-      
-      <!-- Create -->
-      <el-card shadow="hover">
-        <template #header>
-          <div style="font-weight: 700;">新規メモ</div>
-        </template>
+    <template v-slot:header>
+      <TopBar title="メモ管理"></TopBar>
+    </template>
+    <template v-slot:main>
+      <el-space direction="vertical" size="large" style="width: 100%">
+        <el-breadcrumb
+          separator="/"
+          v-for="item in crumbs"
+          >
+          <el-breadcrumb-item>{{ item.label }}</el-breadcrumb-item>
+        </el-breadcrumb>
+        
+        <!-- Create -->
+        <el-card shadow="hover">
+          <template #header>
+            <div style="font-weight: 700;">新規メモ</div>
+          </template>
 
-        <el-form @submit.prevent="addMemo" :inline="true">
-          <el-form-item style="flex: 1; width: 100%">
-            <el-input
-              v-model="content"
-              placeholder="メモを入力"
-              clearable
-              @keyup.enter="addMemo"
-            />
-          </el-form-item>
+          <el-form @submit.prevent="addMemo" :inline="true">
+            <el-form-item style="flex: 1; width: 100%">
+              <el-input
+                v-model="content"
+                placeholder="メモを入力"
+                clearable
+                @keyup.enter="addMemo"
+              />
+            </el-form-item>
 
-          <el-form-item>
-            <el-button type="primary" @click="addMemo">追加</el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
+            <el-form-item>
+              <el-button type="primary" @click="addMemo">追加</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
 
-      <!-- List -->
-      <el-card>
-        <template #header>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-weight: 700;">メモ一覧</div>
-            <div style="font-size: 12px; color: #666;">件数：{{ memos.length }}</div>
-          </div>
-        </template>
+        <!-- List -->
+        <el-card>
+          <template #header>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-weight: 700;">メモ一覧</div>
+              <div style="font-size: 12px; color: #666;">件数：{{ memos.length }}</div>
+            </div>
+          </template>
 
-        <el-table
-          :data="memos"
-          style="width: 100%"
-          v-loading="loading"
-          empty-text="メモがありません"
-        >
-          <el-table-column prop="id" label="ID" width="90" />
-          <el-table-column label="Content">
-            <template #default="{ row }">
-              <template v-if="editId === row.id">
-                <el-input
-                  v-model="editContent"
-                  size="small"
-                  @keyup.enter="saveEdit(row.id)"
-                />
+          <el-table
+            :data="memos"
+            style="width: 100%"
+            v-loading="loading"
+            empty-text="メモがありません"
+          >
+            <el-table-column prop="id" label="ID" width="90" />
+            <el-table-column label="Content">
+              <template #default="{ row }">
+                <template v-if="editId === row.id">
+                  <el-input
+                    v-model="editContent"
+                    size="small"
+                    @keyup.enter="saveEdit(row.id)"
+                  />
+                </template>
+                <template v-else>
+                  {{ row.content }}
+                </template>
               </template>
-              <template v-else>
-                {{ row.content }}
-              </template>
-            </template>
-          </el-table-column>
+            </el-table-column>
 
-          <el-table-column label="操作" width="240" fixed="right">
-            <template #default="{ row }">
-              <template v-if="editId === row.id">
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="saveEdit(row.id)"
-                >
-                  保存
-                </el-button>
-                <el-button size="small" @click="cancelEdit">
-                  キャンセル
-                </el-button>
+            <el-table-column label="操作" width="240" fixed="right">
+              <template #default="{ row }">
+                <template v-if="editId === row.id">
+                  <el-button
+                    type="primary"
+                    size="small"
+                    @click="saveEdit(row.id)"
+                  >
+                    保存
+                  </el-button>
+                  <el-button size="small" @click="cancelEdit">
+                    キャンセル
+                  </el-button>
+                </template>
+                <template v-else>
+                  <el-button size="small" @click="startEdit(row)">
+                    編集
+                  </el-button>
+                  <el-button
+                    type="danger"
+                    size="small"
+                    @click="deleteMemo(row.id)"
+                  >
+                    削除
+                  </el-button>
+                </template>
               </template>
-              <template v-else>
-                <el-button size="small" @click="startEdit(row)">
-                  編集
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="deleteMemo(row.id)"
-                >
-                  削除
-                </el-button>
-              </template>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </el-space>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-space>
+    </template>
+
 
   </AppLayout>
 </template>
